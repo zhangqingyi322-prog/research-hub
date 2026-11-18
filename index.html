@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>中国 REITs 研究工作台</title>
+<style>
+:root { color-scheme: light dark; }
+body { margin: 0; background: light-dark(#f0f2ed, #121614); }
+main { max-width: 1068px; margin: 35px auto; padding: 0 14px; }
+</style>
+</head>
+<body>
+<main>
+<div id="reits-workbench" lang="zh-CN" aria-label="中国公募 REITs 研究工作台预览">
+  <header class="top">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">R</span>
+      <span>中国 REITs <b>研究工作台</b></span>
+    </div>
+    <div class="view-switch" role="group" aria-label="预览视角">
+      <button type="button" data-view="work" aria-pressed="true">研究工作台</button>
+      <button type="button" data-view="public" aria-pressed="false">公开作品集</button>
+    </div>
+  </header>
+
+  <section class="work-view" data-screen="work">
+    <div class="lead">
+      <div class="lead-inner">
+        <div>
+          <label for="reits-topic">正在追踪的问题</label>
+          <select id="reits-topic">
+            <option value="park">产业园运营与分派</option>
+            <option value="market">运营公告与市场反应</option>
+          </select>
+          <h1 id="reits-question"></h1>
+          <p id="reits-topic-note"></p>
+        </div>
+        <aside class="next">
+          <h2>下一步验证</h2>
+          <p id="reits-next"></p>
+        </aside>
+      </div>
+    </div>
+
+    <div class="work-body">
+      <nav class="section-nav" aria-label="选题资料">
+        <button type="button" data-section="literature" aria-pressed="true"><i data-lucide="book-open" aria-hidden="true"></i>文献与方法</button>
+        <button type="button" data-section="industry" aria-pressed="false"><i data-lucide="radio" aria-hidden="true"></i>行业观察</button>
+        <button type="button" data-section="data" aria-pressed="false"><i data-lucide="database" aria-hidden="true"></i>数据核验</button>
+        <button type="button" data-section="skills" aria-pressed="false"><i data-lucide="briefcase" aria-hidden="true"></i>岗位与技能</button>
+      </nav>
+      <div id="reits-panel" aria-live="polite"></div>
+<section id="reits-library">
+  <h2>研究资料库</h2>
+  <nav class="lib-row" aria-label="资料库">
+    <button type="button" data-lib="papers">学术文献矩阵</button>
+    <button type="button" data-lib="pains">业界实务痛点库</button>
+    <button type="button" data-lib="skills">就业技能树</button>
+  </nav>
+  <div class="lib-row">
+    <label>主题 <select id="lib-topic"><option value="">全部</option><option>运营与分派</option><option>市场与披露</option><option>估值与融资</option></select></label>
+    <label>搜索 <input id="lib-search" type="search" placeholder="方法、角色或岗位"></label>
+    <button id="lib-add" type="button">新增记录</button>
+    <button id="lib-export" type="button">导出备份</button>
+    <button id="lib-import" type="button">导入 JSON</button>
+    <input id="lib-file" aria-label="导入 JSON" type="file" accept=".json,application/json" hidden>
+  </div>
+  <p id="lib-status" role="status"></p>
+  <form id="lib-form" hidden>
+    <h3 id="lib-form-title"></h3>
+    <div class="lib-fields"></div>
+    <button type="submit">保存记录</button>
+    <button type="button" id="lib-cancel">取消</button>
+  </form>
+  <div id="lib-results"></div>
+  <details>
+    <summary>用 GPT 更新行业信息</summary>
+    <p>将提示词复制到支持联网检索的 ChatGPT。核对原始链接及发布日期，再把返回结果保存为 JSON 文件导入。新导入的行业线索会标为「待核验」。</p>
+    <div class="lib-row"><button type="button" id="lib-copy">复制更新提示词</button><a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">打开 ChatGPT ↗</a></div>
+    <textarea id="lib-prompt" rows="6" aria-label="GPT 更新提示词" readonly hidden></textarea>
+  </details>
+  <p class="muted">改动保存在当前浏览器。换设备或重新下载前，请先导出备份。</p>
+</section>
+<style>
+#reits-library { border-top:1px solid var(--line); margin-top:24px; padding-top:16px; }
+#reits-library .lib-row { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:9px 0; }
+#reits-library button { background:var(--paper); color:var(--green); border:1px solid var(--line); border-radius:6px; padding:4px 8px; }
+#reits-library button[aria-pressed="true"], #reits-library button[type="submit"] { background:var(--green); color:var(--green-text); }
+#reits-library select { display:inline-block; margin:0; }
+#reits-library input, #reits-library textarea { font:inherit; background:var(--paper); color:var(--ink); border:1px solid var(--line); border-radius:6px; padding:4px 7px; max-width:100%; }
+#reits-library details, #reits-library form { background:var(--paper); border:1px solid var(--line); border-radius:9px; padding:12px; margin:12px 0; }
+#reits-library .lib-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px 12px; margin:8px 0; }
+#reits-library .lib-fields label { display:grid; gap:4px; }
+#reits-library #lib-status { color:var(--green); margin:8px 0; }
+#reits-library #lib-prompt { width:100%; }
+#reits-library .matrix { overflow-x:auto; background:var(--paper); border:1px solid var(--line); border-radius:9px; }
+#reits-library table { width:100%; min-width:680px; border-collapse:collapse; text-align:left; }
+#reits-library th, #reits-library td { border-bottom:1px solid var(--line); padding:8px 10px; vertical-align:top; overflow-wrap:anywhere; }
+#reits-library th { background:var(--pale); }
+#reits-library .role { border-left:2px solid var(--line); padding-left:10px; margin:12px 0; }
+#reits-library .role h3 { margin-bottom:6px; }
+#reits-library .panel { overflow-wrap:anywhere; }
+@media (max-width:580px) { #reits-library .lib-fields { grid-template-columns:minmax(0,1fr); } }
+</style>
+
+    </div>
+  </section>
+
+  <section class="public-view" data-screen="public" hidden>
+    <div class="lead">
+      <p class="view-note">公开首页预览 · 示例内容</p>
+      <h1>从城市空间到基础设施资产</h1>
+      <p class="profile">我在城市规划与设计系开展博士研究，关注中国公募 REITs 底层资产的运营表现，以及这些变化如何反映在现金流和投资判断中。</p>
+    </div>
+    <div class="work-body public-body">
+      <h2>研究案例</h2>
+      <div class="panel-grid">
+        <article class="panel">
+          <span class="tag">拟展示</span>
+          <h3>产业园 REIT 运营与分派</h3>
+          <p>用交易所披露整理出租率、租金收入与分派的时间线，跟踪它们在哪些阶段一起变化。</p>
+          <p class="muted">运营数据整理 · 披露解读</p>
+        </article>
+        <article class="panel">
+          <span class="tag">拟展示</span>
+          <h3>运营公告与二级市场反应</h3>
+          <p>整理可明确定位日期的运营公告，展示如何定义事件并检查同期披露。</p>
+          <p class="muted">公告文本整理 · 事件研究</p>
+        </article>
+      </div>
+    </div>
+  </section>
+</div>
+
+<style>
+  #reits-workbench {
+    --page: light-dark(#f8f7f3, #171b1a);
+    --paper: light-dark(#fffefa, #202523);
+    --hero: light-dark(#eaf1e9, #26342d);
+    --ink: light-dark(#1d2a23, #eef3ef);
+    --soft: light-dark(#4f6257, #b7c7bc);
+    --line: light-dark(#d6dfd6, #3c4b41);
+    --green: light-dark(#214d3d, #a5d2b9);
+    --green-text: light-dark(#ffffff, #183226);
+    --pale: light-dark(#edf3ee, #2a3a31);
+    background: var(--page);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    font: 14px/1.6 "Instrument Sans", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+    overflow: hidden;
+  }
+  #reits-workbench *, #reits-workbench *::before { box-sizing: border-box; }
+  #reits-workbench [hidden] { display: none !important; }
+  #reits-workbench h1, #reits-workbench h2, #reits-workbench h3, #reits-workbench p { margin: 0; color: inherit; }
+  #reits-workbench h1 { margin: 13px 0 8px; font-size: clamp(23px, 4.35vw, 37px); line-height: 1.28; letter-spacing: -.045em; font-weight: 650; }
+  #reits-workbench h2 { font-size: 16px; font-weight: 650; }
+  #reits-workbench h3 { font-size: 15px; font-weight: 620; margin-top: 8px; }
+  #reits-workbench button, #reits-workbench select { font: inherit; color: inherit; }
+  #reits-workbench button { cursor: pointer; }
+  #reits-workbench a { color: var(--green); text-underline-offset: 3px; }
+  #reits-workbench :focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+  #reits-workbench .top {
+    min-height: 64px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 94px 12px 22px;
+    background: var(--paper);
+  }
+  #reits-workbench .brand, #reits-workbench .view-switch, #reits-workbench .section-nav, #reits-workbench .links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  #reits-workbench .brand-mark {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    background: var(--green);
+    color: var(--green-text);
+    font: 600 19px/1 Georgia, serif;
+  }
+  #reits-workbench .view-switch { gap: 2px; background: var(--pale); padding: 3px; border-radius: 8px; }
+  #reits-workbench .view-switch button {
+    border: 1px solid transparent;
+    background: transparent;
+    padding: 4px 9px;
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  #reits-workbench .view-switch button[aria-pressed="true"] { background: var(--paper); border-color: var(--line); font-weight: 650; }
+  #reits-workbench .lead { background: var(--hero); padding: 26px 25px; border-block: 1px solid var(--line); }
+  #reits-workbench .lead-inner { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr); gap: 24px; align-items: center; }
+  #reits-workbench label, #reits-workbench .view-note { color: var(--green); font-size: 12px; font-weight: 650; }
+  #reits-workbench select {
+    display: block;
+    margin-top: 5px;
+    max-width: 100%;
+    min-height: 32px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--paper);
+    padding: 2px 8px;
+  }
+  #reits-workbench .next { padding: 14px 16px; background: var(--paper); border: 1px solid var(--line); border-radius: 10px; }
+  #reits-workbench .next p { margin-top: 6px; }
+  #reits-workbench .work-body { padding: 0 25px 22px; }
+  #reits-workbench .section-nav { border-bottom: 1px solid var(--line); margin-bottom: 17px; gap: 4px 13px; }
+  #reits-workbench .section-nav button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    padding: 12px 3px 9px;
+    color: var(--soft);
+  }
+  #reits-workbench .section-nav button[aria-pressed="true"] { color: var(--green); border-color: var(--green); font-weight: 650; }
+  #reits-workbench .section-nav svg { width: 15px; height: 15px; }
+  #reits-workbench .panel-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  #reits-workbench .panel {
+    min-width: 0;
+    padding: 15px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  #reits-workbench .panel p + p, #reits-workbench .panel h3 + p, #reits-workbench .links, #reits-workbench .profile { margin-top: 6px; }
+  #reits-workbench .muted, #reits-workbench #reits-topic-note { color: var(--soft); }
+  #reits-workbench .muted, #reits-workbench .tag, #reits-workbench .links { font-size: 12px; }
+  #reits-workbench .tag { display: inline-block; color: var(--green); background: var(--pale); border-radius: 5px; padding: 2px 7px; }
+  #reits-workbench .trend {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    align-items: end;
+    margin-top: 6px;
+    text-align: center;
+    font-size: 12px;
+  }
+  #reits-workbench .trend span { display: block; }
+  #reits-workbench .trend .bar {
+    width: min(60%, 34px);
+    height: calc(7px * var(--count));
+    margin: 2px auto 3px;
+    background: var(--green);
+    border-radius: 3px 3px 0 0;
+  }
+  #reits-workbench .public-body { padding-top: 16px; }
+  #reits-workbench .public-body h2 { margin-bottom: 10px; }
+  #reits-workbench .profile { max-width: 62ch; }
+  @media (max-width: 580px) {
+    #reits-workbench .top { padding: 10px 88px 10px 14px; }
+    #reits-workbench .lead, #reits-workbench .work-body { padding-inline: 14px; }
+    #reits-workbench .lead-inner, #reits-workbench .panel-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  }
+  @media (pointer: coarse) {
+    #reits-workbench button, #reits-workbench select { min-height: 44px; }
+  }
+</style>
+
+<script>
+(() => {
+  const root = document.getElementById("reits-workbench");
+  const picker = root.querySelector("#reits-topic");
+  const panel = root.querySelector("#reits-panel");
+  const topicData = {
+    park: {
+      question: "出租率变化后，产业园 REIT 的租金和分派怎么变？",
+      note: "从园区运营切入，连接城市规划、资产管理与基金披露。",
+      next: "抽查两只产业园 REIT 的定期报告，核对出租率、租金收入和可供分配金额的披露口径。",
+      paper: "可借鉴的方法 · 对比案例与季度时间线",
+      method: "先对齐报告期，逐期对照运营变化、租金收入和可供分配金额。",
+      relevance: "相关理由：底层资产和观察指标与选题一致。",
+      query: "中国 公募REITs 产业园 出租率 现金流",
+      counts: [1, 3, 4, 6],
+      industry: [
+        ["管理人公开说明会", "观察管理人怎样解释出租率与租金收入的变动。", "追问：续约、免租和租户更替分别影响了什么？"],
+        ["园区运营方 · 交流提纲", "了解招商、续约和空间改造决策如何权衡。", "记录角色、对应资产、交流日期和可核对的原始材料。"]
+      ],
+      data: [
+        ["基金定期报告", "提取期末出租率、报告期租金收入和可供分配金额。", "待核对：资产与基金层级、期间、单位及页码。"],
+        ["招募说明书与评估报告", "记录租期、租户集中度和估值假设。", "待核对：不同产品与不同报告期是否可比。"]
+      ],
+      skills: [
+        ["资产运营 · 运营指标解读", "练习：用 Excel 做两只产品的季度指标对照表。", "拟展示：带口径和披露页码的数据表。"],
+        ["基金研究 · 现金流分析", "练习：解释出租率上升但分派未同步增长的可能因素，并逐项查证。", "拟展示：一页 REIT 运营案例。"]
+      ]
+    },
+    market: {
+      question: "运营公告发布后，REIT 的价格和成交量怎么变？",
+      note: "把资产运营信息和二级市场数据放在同一条时间线上。",
+      next: "先手工标记几条公告的发布时间，再检查事件窗口内是否有分派或其他重大公告。",
+      paper: "可借鉴的方法 · 事件研究",
+      method: "定义公告事件日和观察窗口，选取基准，再检查公告重叠。",
+      relevance: "相关理由：可以借用事件定义和基准选择来设计小样本试做。",
+      query: "中国 公募REITs 公告 事件研究 价格反应",
+      counts: [2, 2, 5, 4],
+      industry: [
+        ["基金管理人 · 运营披露", "对照公告正文与定期报告，区分首次披露和例行更新。", "追问：市场在哪一天能看到这条信息？"],
+        ["二级市场分析师 · 交流提纲", "了解从业者怎样判断一条运营消息是否超出预期。", "记录角色、所谈事件和可对照的市场数据。"]
+      ],
+      data: [
+        ["交易所公告", "记录发布时间、证券代码及同期披露。", "待核对：盘后发布对应的交易日，以及停牌或节假日。"],
+        ["日行情与基准收益", "准备收盘价、成交额和适用基准。", "待核对：复权或分派口径、样本覆盖和行情使用权限。"]
+      ],
+      skills: [
+        ["市场研究 · 事件整理", "练习：建立事件清单和交易日对照表。", "拟展示：含纳入条件与重叠公告处理规则的样本表。"],
+        ["投研分析 · 结果表达", "练习：画出公告前后的价格与成交额，并标明同时发生的事件。", "拟展示：有基准说明的分析图。"]
+      ]
+    }
+  };
+
+  const controls = [...root.querySelectorAll("[data-view], [data-section]")];
+  let view = "work";
+  let section = "literature";
+
+  function literature(topic) {
+    const chartLabel = topic.counts.map((n, i) => `${2022 + i} 年 ${n} 篇`).join("，");
+    return `<div class="panel-grid">
+      <article class="panel">
+        <span class="tag">方法卡示例</span>
+        <h3>${topic.paper}</h3>
+        <p>${topic.method}</p>
+        <p class="muted">${topic.relevance}</p>
+        <div class="links">
+          <a href="https://scholar.google.com/scholar?q=${encodeURIComponent(topic.query)}" target="_blank" rel="noopener">Google Scholar ↗</a>
+          <a href="https://www.cnki.net/" target="_blank" rel="noopener">知网检索入口 ↗</a>
+        </div>
+      </article>
+      <article class="panel">
+        <h2>文献库趋势</h2>
+        <p class="muted">每年收录篇数 · 模拟数据</p>
+        <div class="trend" role="img" aria-label="${chartLabel}">
+          ${topic.counts.map((n, i) => `<div aria-hidden="true"><span>${n}</span><span class="bar" style="--count:${n}"></span><span>${2022 + i}</span></div>`).join("")}
+        </div>
+      </article>
+    </div>`;
+  }
+
+  function cards(topic) {
+    const labels = { industry: ["信息来源示例", "待交流"], data: ["待核验", "待核验"], skills: ["岗位任务示例", "岗位任务示例"] };
+    return `<div class="panel-grid">${topic[section].map(([title, detail, note], index) => `<article class="panel">
+      <span class="tag">${labels[section][index]}</span>
+      <h3>${title}</h3>
+      <p>${detail}</p>
+      <p class="muted">${note}</p>
+    </article>`).join("")}</div>`;
+  }
+
+  function render() {
+    const topic = topicData[picker.value];
+    root.querySelector("#reits-question").textContent = topic.question;
+    root.querySelector("#reits-topic-note").textContent = topic.note;
+    root.querySelector("#reits-next").textContent = topic.next;
+    root.querySelectorAll("[data-screen]").forEach(screen => {
+      screen.hidden = screen.dataset.screen !== view;
+    });
+    controls.forEach(button => {
+      const active = button.dataset.view === view || button.dataset.section === section;
+      button.setAttribute("aria-pressed", String(active));
+    });
+    panel.innerHTML = section === "literature" ? literature(topic) : cards(topic);
+  }
+
+  function saveState() {
+    window.openai?.setWidgetState?.({
+      modelContent: { topic: picker.value, section, view }
+    })?.catch(() => {});
+  }
+
+  function restoreState(snapshot) {
+    const choice = snapshot?.modelContent;
+    if (choice && Object.hasOwn(topicData, choice.topic)) picker.value = choice.topic;
+    if (controls.some(button => button.dataset.section && button.dataset.section === choice?.section)) section = choice.section;
+    if (choice?.view === "public" || choice?.view === "work") view = choice.view;
+    render();
+  }
+
+  controls.forEach(button => button.addEventListener("click", () => {
+    if (button.dataset.view) view = button.dataset.view;
+    if (button.dataset.section) section = button.dataset.section;
+    render();
+    saveState();
+  }));
+  picker.addEventListener("change", () => {
+    render();
+    saveState();
+  });
+  window.addEventListener("openai:set_globals", event => {
+    if (event.detail?.globals?.widgetState) restoreState(event.detail.globals.widgetState);
+  });
+  restoreState(window.openai?.widgetState);
+})();
+</script>
+
+<script>
+(() => {
+  const root = document.getElementById("reits-library");
+  const get = id => root.querySelector("#lib-" + id);
+  const topics = ["运营与分派","市场与披露","估值与融资"];
+  const kinds = {papers:"学术文献矩阵",pains:"业界实务痛点库",skills:"就业技能树"};
+  const stages = {papers:["待读","摘要已核对","全文已核对"],pains:["待核验","原始来源已核对","访谈待验证"],skills:["待开始","练习中","已产出"]};
+  const labels = {
+    papers:["问题与样本","方法","如何借鉴／待核对"],
+    pains:["事实与痛点","相关角色","可研究问题／下一步"],
+    skills:["练习任务","目标岗位","作品与验收标准"]
+  };
+  const keys = ["id","title","topic","detail","method","action","evidence","url","stage"];
+  const make = (id,title,topic,detail,method,action,evidence,url,stage) => ({id,title,topic:topics[topic],detail,method,action,evidence,url,stage});
+  const seeds = {
+    papers:[
+      make("p1","The Financial Performance of Newly Launched Chinese Infrastructure REITs",1,"Piao 与 Mei（2023）。研究首批 9 只中国基础设施 REITs。","短期事件研究框架；收益风险指标与面板分析","借鉴如何选取对照组。改做运营公告时，重设事件日、样本和基准。","期刊文章","https://scholars.duke.edu/publication/1633204","摘要已核对"),
+      make("p2","Investors’ response to real estate investment trust in China",1,"考察首批公募 REITs 上市事件对基础设施上市公司的影响。","事件研究","核对事件窗口与基准。观测对象为基础设施上市公司。","Finance Research Letters，2025","https://www.sciencedirect.com/science/article/pii/S1544612325018756","摘要已核对"),
+      make("p3","中国公募 REITs 折溢价影响因素研究",0,"张苑（2025），清华硕士论文。用 2021—2024 年中国公募 REITs 数据研究底层资产运营与折溢价。","双向固定效应与交互项","从全文核对运营效率定义和面板结构。试建报告期面板，再判断能否延伸到分派。","学位论文公开摘要","https://newetds.lib.tsinghua.edu.cn/qh/paper/summary?dbCode=ETDQH&sysId=298608","摘要已核对"),
+      make("p4","经营权类基础设施 REITs 估值研究",2,"徐成彬等。结合 9 只上市经营权类产品研究估值框架。","收益法与案例比较","提取剩余经营期限、折现率和现金流假设。另核对产权类资产的估值口径。","深交所网站收录","https://docs.static.szse.cn/www/aboutus/research/secuities/daily/W020221227311243629196.pdf","摘要已核对"),
+      make("p5","Evaluation of REITs resilience of infrastructure projects",2,"样本覆盖 2021 年 6 月至 2024 年 6 月上市的 39 只中国基础设施 REITs。","地理探测器模型","先核对指标分组和数据要求，再评估能否比较不同类型资产。","Frontiers of Engineering Management，2025","https://journal.hep.com.cn/fem/EN/10.1007/s42524-025-4097-z","摘要已核对")
+    ],
+    pains:[
+      make("i1","租约到期后，园区如何缓冲出租率波动？",0,"张江产业园 REIT 年报披露，部分租户到期未续租，影响期末出租率，运营机构在开展招商。","园区运营方、资产管理","对照租约到期、空置、租金收入与分派。先对齐数据层级、报告期和单位。","上交所披露，2026-03-27","https://www.sse.com.cn/disclosure/fund/announcement/c/new/2026-03-27/508000_20260327_HFJ9.pdf","原始来源已核对"),
+      make("i2","公告叠加时，如何识别运营消息的市场反应？",1,"待验证场景：运营更新可能与分派等披露时间重合。","基金管理人、投研分析师","抓一小批公告，标记盘后发布及同期事项，再确定样本规则。","研究假设","","待核验"),
+      make("i3","经营权资产的估值对期限和折现率有多敏感？",2,"实务研究讨论了收益预测、经营期限与核心估值参数。","评估师、基础设施投资分析师","用一只产品的披露参数做敏感性表，标出情景假设。","深交所网站收录实务研究","https://docs.static.szse.cn/www/aboutus/research/secuities/daily/W020221227311243629196.pdf","原始来源已核对"),
+      make("i4","出租率回升时，租金和分派为什么可能不同步？",0,"可能涉及续租条件、免租期、收入确认与资本开支。","园区招商、运营与基金财务","试做季度指标对照，再访谈确认哪些解释有证据。","访谈提纲","","访谈待验证")
+    ],
+    skills:[
+      make("s1","披露阅读与数据整理",0,"用 Excel 或 Python 对齐两只园区 REIT 的季度指标。","园区／资产运营","交付数据字典，注明单位、数据层级、期间和披露页码。","练习建议","","待开始"),
+      make("s2","园区区位与租赁市场分析",0,"用 GIS 梳理交通可达性与可比园区。","园区／资产运营","交付区位图和可比园区表，标注地图及租赁数据来源。","练习建议","","待开始"),
+      make("s3","现金流与分派桥接",0,"梳理租金收入、运营支出和可供分配金额之间的口径。","REITs 投研","交付一页桥接表，明确无法观测的输入。","练习建议","","待开始"),
+      make("s4","公告事件研究",1,"构建公告与交易日对照，画出事件窗口内的异常收益。","REITs 投研","交付事件清单、基准说明和可复现的结果图。","练习建议","","待开始"),
+      make("s5","投研简报与观点核验",1,"结合公告、管理人解释和数据写一页简报。","REITs 投研","每个关键判断附原始来源，并指出待核验的问题。","练习建议","","待开始"),
+      make("s6","估值建模与敏感性分析",2,"搭一个收益法估值表，改变现金流和折现率假设。","估值／基础设施咨询","交付可修改的估值表，参数附来源及范围。","练习建议","","待开始"),
+      make("s7","资产尽调与风险清单",2,"用招募说明书梳理权属、经营期限与信息缺口。","估值／基础设施咨询","交付一页清单，注明原文位置和待问对象。","练习建议","","待开始")
+    ]
+  };
+  const key = "reits-library-v2";
+  const form = get("form");
+  const topic = get("topic");
+  const search = get("search");
+  const status = get("status");
+  const results = get("results");
+  const tabs = [...root.querySelectorAll("[data-lib]")];
+  let current = "papers";
+  let editing = null;
+  let records = seeds;
+
+  function sanitize(type,item) {
+    if (!item || typeof item.title !== "string" || !item.title.trim() || !topics.includes(item.topic)) throw Error("缺少标题或主题有误。");
+    const record = Object.fromEntries(keys.map(field => [field,typeof item[field] === "string" ? item[field].trim().slice(0,3000) : ""]));
+    if (record.url) {
+      const url = new URL(record.url);
+      if (!["https:","http:"].includes(url.protocol)) throw Error("原始链接应以 https:// 或 http:// 开头。");
+      record.url = url.href;
+    }
+    if (!stages[type].includes(record.stage)) record.stage = stages[type][0];
+    return record;
+  }
+  function parse(data) {
+    if (data?.version !== 1 || !data.records) throw Error("JSON 格式不匹配。");
+    return Object.fromEntries(Object.keys(kinds).map(type => {
+      const items = data.records[type] ?? [];
+      if (!Array.isArray(items)) throw Error("记录必须是列表。");
+      return [type,items.map(item => sanitize(type,item))];
+    }));
+  }
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved) records = parse(JSON.parse(saved));
+  } catch { status.textContent = "本地资料读取失败，当前显示初始资料。"; }
+
+  function save(next,message) {
+    records = next;
+    try {
+      localStorage.setItem(key,JSON.stringify({version:1,records}));
+      status.textContent = message;
+    } catch { status.textContent = "浏览器无法保存，本次改动可先导出备份。"; }
+    render();
+  }
+  function el(tag,text,className) {
+    const node = document.createElement(tag);
+    if (text) node.textContent = text;
+    if (className) node.className = className;
+    return node;
+  }
+  function button(text,action) {
+    const node = el("button",text);
+    node.type = "button";
+    node.addEventListener("click",action);
+    return node;
+  }
+  function source(item) {
+    const line = el("p",item.evidence,"muted");
+    if (item.url) {
+      const a = el("a","查看原始来源 ↗");
+      a.href = item.url;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      line.append(" ",a);
+    }
+    return line;
+  }
+  function switchTo(type,theme) {
+    current = type;
+    if (theme) {
+      topic.value = theme;
+      search.value = "";
+    }
+    form.hidden = true;
+    status.textContent = "";
+    render();
+  }
+  function card(item) {
+    const node = el("article","","panel");
+    node.append(el("span",item.topic + " · " + item.stage,"tag"),el("h3",item.title),el("p",item.detail));
+    if (current === "pains") node.append(el("p","相关角色 · " + item.method));
+    node.append(el("p",item.action),source(item));
+    const actions = el("div","","lib-row");
+    actions.append(button("编辑",() => edit(item)));
+    if (current === "pains") actions.append(button("相关文献",() => switchTo("papers",item.topic)),button("相关技能",() => switchTo("skills",item.topic)));
+    node.append(actions);
+    return node;
+  }
+  function grid(items) {
+    const node = el("div","","panel-grid");
+    node.append(...items.map(card));
+    return node;
+  }
+  function matrix(items) {
+    const wrapper = el("div","","matrix");
+    const table = el("table");
+    const header = table.createTHead().insertRow();
+    ["文献／主题",...labels.papers,"状态"].forEach(text => header.append(el("th",text)));
+    const body = table.createTBody();
+    for (const item of items) {
+      const row = body.insertRow();
+      row.insertCell().append(el("strong",item.title),el("p",item.topic,"muted"),source(item));
+      for (const value of [item.detail,item.method,item.action]) row.insertCell().textContent = value;
+      row.insertCell().append(el("p",item.stage),button("编辑",() => edit(item)));
+    }
+    wrapper.append(table);
+    return wrapper;
+  }
+  function render() {
+    tabs.forEach(tab => tab.setAttribute("aria-pressed",String(tab.dataset.lib === current)));
+    const term = search.value.trim().toLowerCase();
+    const items = records[current].filter(item => (!topic.value || topic.value === item.topic)
+      && keys.some(field => item[field].toLowerCase().includes(term)));
+    results.replaceChildren();
+    if (!items.length) {
+      results.append(el("p","没有匹配的记录。"));
+      return;
+    }
+    if (current === "papers") results.append(matrix(items));
+    if (current === "pains") results.append(grid(items));
+    if (current === "skills") {
+      const byRole = new Map();
+      for (const item of items) {
+        const role = item.method || "未指定岗位";
+        if (!byRole.has(role)) byRole.set(role,[]);
+        byRole.get(role).push(item);
+      }
+      for (const [role,list] of byRole) {
+        const branch = el("section","","role");
+        const done = list.filter(item => item.stage === "已产出").length;
+        branch.append(el("h3",role + " · " + done + "/" + list.length + " 已产出"),grid(list));
+        results.append(branch);
+      }
+    }
+  }
+  function edit(item) {
+    editing = item?.id ?? null;
+    get("form-title").textContent = (item ? "编辑" : "新增") + " · " + kinds[current];
+    const fields = form.querySelector(".lib-fields");
+    const [detail,method,action] = labels[current];
+    fields.replaceChildren();
+    for (const [name,text] of Object.entries({title:"标题",topic:"主题",detail,method,action,evidence:"来源说明与日期",url:"原始链接",stage:"状态"})) {
+      const options = name === "topic" ? topics : name === "stage" ? stages[current] : null;
+      const input = el(options ? "select" : ["detail","action"].includes(name) ? "textarea" : "input");
+      const label = el("label",text);
+      input.name = name;
+      if (options) input.append(...options.map(value => el("option",value)));
+      if (name === "title") input.required = true;
+      if (name === "url") input.type = "url";
+      input.value = item?.[name] || (name === "topic" ? topic.value || topics[0] : options?.[0] || "");
+      label.append(input);
+      fields.append(label);
+    }
+    form.hidden = false;
+    fields.querySelector("[name=title]").focus();
+  }
+  const id = () => globalThis.crypto?.randomUUID?.() || Date.now() + "-" + Math.random().toString(36).slice(2);
+  form.addEventListener("submit",event => {
+    event.preventDefault();
+    try {
+      const item = sanitize(current,{...Object.fromEntries(new FormData(form)),id:editing || id()});
+      const items = editing ? records[current].map(row => row.id === editing ? item : row) : [item,...records[current]];
+      topic.value = item.topic;
+      search.value = "";
+      form.hidden = true;
+      save({...records,[current]:items},"已保存记录。");
+    } catch (error) { status.textContent = error.message; }
+  });
+  tabs.forEach(tab => tab.addEventListener("click",() => switchTo(tab.dataset.lib)));
+  topic.addEventListener("change",render);
+  search.addEventListener("input",render);
+  get("add").addEventListener("click",() => edit());
+  get("cancel").addEventListener("click",() => { form.hidden = true; get("add").focus(); });
+  get("export").addEventListener("click",() => {
+    const file = new Blob([JSON.stringify({version:1,kind:"backup",records},null,2)],{type:"application/json"});
+    const url = URL.createObjectURL(file);
+    const link = el("a");
+    link.href = url;
+    link.download = "reits-library-backup.json";
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url),1000);
+  });
+  get("import").addEventListener("click",() => get("file").click());
+  get("file").addEventListener("change",async event => {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      const incoming = parse(data);
+      const backup = data.kind === "backup";
+      const next = {};
+      let changes = 0;
+      for (const type of Object.keys(kinds)) {
+        const items = new Map(records[type].map(item => [item.id,item]));
+        for (const item of incoming[type]) {
+          if (backup && item.id && items.has(item.id)) {
+            if (JSON.stringify(items.get(item.id)) !== JSON.stringify(item)) {
+              items.set(item.id,item);
+              changes++;
+            }
+            continue;
+          }
+          if ([...items.values()].some(row => row.title === item.title && row.topic === item.topic && row.url === item.url)) continue;
+          item.id = backup && item.id ? item.id : id();
+          if (!backup && type === "pains") item.stage = "待核验";
+          items.set(item.id,item);
+          changes++;
+        }
+        next[type] = [...items.values()];
+      }
+      if (incoming.pains.length && !backup) switchTo("pains");
+      save(next,"导入完成，共更新 " + changes + " 条记录。");
+    } catch (error) { status.textContent = "导入失败：" + error.message; }
+    event.target.value = "";
+  });
+  get("copy").addEventListener("click",async () => {
+    const prompt = get("prompt");
+    const scope = topic.value || topics.join("、");
+    const sample = {version:1,records:{pains:[{title:"标题",topic:topic.value || topics[0],detail:"原始事实和单独标明的推断",method:"从业者角色",action:"可研究问题与待核验步骤",evidence:"机构、材料名称、发布日期 YYYY-MM-DD",url:"https://原始来源",stage:"待核验"}]}};
+    prompt.value = [
+      "请联网检索最近 7 天中国公募 REITs 动态，限这些主题：" + scope + "。优先查沪深交易所公告、基金管理人公开披露、行业公开活动或访谈。区分发布日期、事件日期、机构陈述与推断。每条必须有直接的原始链接，最多 5 条。无可靠来源时返回空列表。",
+      "只输出有效 JSON，不加 Markdown 围栏。请用下列格式，并用实际内容替换样例。topic 只能选：" + topics.join("、"),
+      JSON.stringify(sample)
+    ].join("\n");
+    prompt.hidden = false;
+    prompt.select();
+    try {
+      await navigator.clipboard.writeText(prompt.value);
+      status.textContent = "已复制更新提示词。";
+    } catch { status.textContent = "提示词已选中，可手动复制。"; }
+  });
+  render();
+})();
+</script>
+
+</main>
+</body>
+</html>
